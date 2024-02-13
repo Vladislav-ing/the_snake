@@ -94,20 +94,18 @@ class Snake(GameObject):
     """Обрабатывает действия, состояние, отрисовывет змейку."""
 
     def __init__(self, body_color=SNAKE_COLOR, length=1,
-                 direction=RIGHT, next_direction=None):
+                 direction=RIGHT):
 
         super().__init__(body_color)
         self.length = length
         self.direction = direction
-        self.next_direction = next_direction
         self.positions = [self.position]
         self.last = None
 
-    def update_direction(self):
-        """Метод обновления направления после нажатия на кнопку"""
-        if self.next_direction:
-            self.direction = self.next_direction
-            self.next_direction = None
+    def update_direction(self, next_path, actuall_path):
+        """Метод проверяющий направление, после нажатия"""
+        if abs(actuall_path[0]) != abs(next_path[0]):
+            self.direction = next_path
 
     def move(self):
         """Метод для обновления позиции змейки."""
@@ -115,8 +113,8 @@ class Snake(GameObject):
         update_head = [head[0] + (direct[0] * GRID_SIZE),
                        head[1] + (direct[1] * GRID_SIZE)]
 
-        if (0 >= update_head[0] or update_head[0] >= SCREEN_WIDTH) or (
-                0 >= update_head[1] or update_head[1] >= SCREEN_HEIGHT):
+        if not (0 < update_head[0] < SCREEN_WIDTH) or not (
+                0 < update_head[1] < SCREEN_HEIGHT):
             update_head = [update_head[0] % SCREEN_WIDTH,
                            update_head[1] % SCREEN_HEIGHT]
 
@@ -166,8 +164,8 @@ def handle_keys(game_object):
             if event.key in dict_input:
                 next_path = dict_input.get(event.key)
                 actuall_path = game_object.direction
-                game_object.next_direction = (next_path if abs(actuall_path[0])
-                                              != abs(next_path[0]) else None)
+                game_object.update_direction(
+                    next_path=next_path, actuall_path=actuall_path)
 
 
 def main():
@@ -178,7 +176,6 @@ def main():
     while True:
         clock.tick(SPEED)
         handle_keys(snake)
-        snake.update_direction()
         snake.move()
 
         GameObject.draw(apple, screen)
